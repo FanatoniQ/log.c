@@ -5,8 +5,42 @@ A simple logging library implemented in C99
 
 
 ## Usage
-**[log.c](src/log.c?raw=1)** and **[log.h](src/log.h?raw=1)** should be dropped
-into an existing project and compiled along with it. The library provides 6
+
+### Build
+
+- cmake >= 3.0 is required
+
+#### cmake
+
+```sh
+mkdir build
+cd build
+
+# With default generator with color support:
+cmake ..
+# On Windows with MinGW generator without color support:
+cmake -G 'MinGW Makefiles' -D LOG_USE_COLOR=OFF ..
+# On Windows with MinGW generator with forced color support:
+cmake -G 'MinGW Makefiles' -D LOG_FORCE_COLOR=ON ..
+
+
+# To build the liblog.c.a static library:
+cmake --build .
+# To build the example binary:
+cmake --build . --target=example
+# To build the color_example binary (requires LOG_USE_COLOR):
+cmake --build . --target=color_example
+```
+
+Will produce the `liblog.c.a` static library file, which can be used with `-L` and `-I` compiler options:
+
+```sh
+gcc example.c -o example -Lbuild -llog.c -Ibuild/gen
+```
+
+### Spec
+
+The library provides 6
 function-like macros for logging:
 
 ```c
@@ -73,10 +107,25 @@ The function is passed the boolean `true` if the lock should be acquired or
 Returns the name of the given log level as a string.
 
 
-#### LOG_USE_COLOR
-If the library is compiled with `-DLOG_USE_COLOR` ANSI color escape codes will
-be used when printing.
+#### log_set_color(void)
+Sets color support to be used when `stdout_callback` is called.
+This should be called at the start of the program in order to enable color support on supported
+os and tty. Requires `-D LOG_USE_COLOR=ON`.
 
+
+#### log_force_color(bool colors)
+Forces color support. Requires `-D LOG_USE_COLOR=ON`.
+
+
+#### LOG_USE_COLOR
+If cmake project configuration used `-D LOG_USE_COLOR=ON` ANSI color escape codes will
+be available on compatible systems when using a tty once `log_set_color` is called.
+
+
+#### LOG_FORCE_COLOR
+If cmake project configuration used `-D LOG_FORCE_COLOR=ON` ANSI color escape codes will
+be forced once `log_set_color` is called.
+This is usefull to force ANSI color escape codes on non compatible systems or non tty.
 
 ## License
 This library is free software; you can redistribute it and/or modify it under

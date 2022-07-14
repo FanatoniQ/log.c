@@ -8,12 +8,36 @@
 #ifndef LOG_H
 #define LOG_H
 
+#ifndef LOG_USE_COLOR
+#cmakedefine LOG_USE_COLOR
+#endif
+
+#ifndef LOG_FORCE_COLOR
+#cmakedefine LOG_FORCE_COLOR
+#endif
+
+#ifndef HAVE_WIN32_VT100
+#cmakedefine HAVE_WIN32_VT100
+#endif
+
+#ifndef HAVE_UNISTD_H
+#cmakedefine HAVE_UNISTD_H
+#endif
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <time.h>
+#ifdef LOG_USE_COLOR
+#ifdef HAVE_WIN32_VT100
+#include <io.h>
+#include <windows.h>
+#elif HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#endif
 
-#define LOG_VERSION "0.1.0"
+#define LOG_VERSION "0.2.0"
 
 typedef struct {
   va_list ap;
@@ -36,6 +60,11 @@ enum { LOG_TRACE, LOG_DEBUG, LOG_INFO, LOG_WARN, LOG_ERROR, LOG_FATAL };
 #define log_warn(...)  log_log(LOG_WARN,  __FILE__, __LINE__, __VA_ARGS__)
 #define log_error(...) log_log(LOG_ERROR, __FILE__, __LINE__, __VA_ARGS__)
 #define log_fatal(...) log_log(LOG_FATAL, __FILE__, __LINE__, __VA_ARGS__)
+
+#ifdef LOG_USE_COLOR
+void log_set_color(void);
+void log_force_color(bool colors);
+#endif
 
 const char* log_level_string(int level);
 void log_set_lock(log_LockFn fn, void *udata);

@@ -35,6 +35,9 @@ static struct {
   log_LockFn lock;
   int level;
   bool quiet;
+#ifdef LOG_USE_COLOR
+  bool colors;
+#endif
   Callback callbacks[MAX_CALLBACKS];
 } L;
 
@@ -44,9 +47,42 @@ static const char *level_strings[] = {
 };
 
 #ifdef LOG_USE_COLOR
+#ifdef HAVE_WIN32_VT100
+// On windows, some colors are not visible...
+static const char *level_colors[] = {
+  "\x1b[94m", "\x1b[36m", "\x1b[32m", "\x1b[33;1m", "\x1b[31m", "\x1b[35;1m"
+};
+#else
 static const char *level_colors[] = {
   "\x1b[94m", "\x1b[36m", "\x1b[32m", "\x1b[33m", "\x1b[31m", "\x1b[35m"
 };
+#endif /* HAVE_WIN32_VT100 */
+#endif
+
+#ifdef LOG_USE_COLOR
+void log_set_color(void) {
+#ifdef HAVE_WIN32_VT100
+  HANDLE stderr_handle;
+  DWORD mode;
+
+  stderr_handle = GetStdHandle(STD_ERROR_HANDLE);
+  L.colors = (
+    _isatty(_fileno(stderr)) &&
+    GetConsoleMode(stderr_handle, &mode) &&
+    SetConsoleMode(stderr_handle, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING)
+  );
+#elif HAVE_UNISTD_H
+  L.colors = isatty(fileno(stderr));
+#elif LOG_FORCE_COLOR
+  L.colors = true;
+#else
+  L.colors = false;
+#endif
+}
+
+void log_force_color(bool colors) {
+  L.colors = colors;
+}
 #endif
 
 
@@ -54,10 +90,15 @@ static void stdout_callback(log_Event *ev) {
   char buf[16];
   buf[strftime(buf, sizeof(buf), "%H:%M:%S", ev->time)] = '\0';
 #ifdef LOG_USE_COLOR
-  fprintf(
-    ev->udata, "%s %s%-5s\x1b[0m \x1b[90m%s:%d:\x1b[0m ",
-    buf, level_colors[ev->level], level_strings[ev->level],
-    ev->file, ev->line);
+  if (L.colors)
+    fprintf(
+      ev->udata, "%s %s%-5s\x1b[0m \x1b[90m%s:%d:\x1b[0m ",
+      buf, level_colors[ev->level], level_strings[ev->level],
+      ev->file, ev->line);
+  else
+    fprintf(
+      ev->udata, "%s %-5s %s:%d: ",
+      buf, level_strings[ev->level], ev->file, ev->line);
 #else
   fprintf(
     ev->udata, "%s %-5s %s:%d: ",
