@@ -47,41 +47,52 @@ static const char *level_strings[] = {
 };
 
 #ifdef LOG_USE_COLOR
-#ifdef HAVE_WIN32_VT100
-// On windows, some colors are not visible...
 static const char *level_colors[] = {
-  "\x1b[94m", "\x1b[36m", "\x1b[32m", "\x1b[33;1m", "\x1b[31m", "\x1b[35;1m"
-};
+#ifdef LOG_USE_BRIGHT_COLOR
+  "\x1b[94;1m", "\x1b[36;1m", "\x1b[32;1m", "\x1b[33;1m", "\x1b[31;1m", "\x1b[35;1m"
 #else
-static const char *level_colors[] = {
   "\x1b[94m", "\x1b[36m", "\x1b[32m", "\x1b[33m", "\x1b[31m", "\x1b[35m"
+#endif
 };
-#endif /* HAVE_WIN32_VT100 */
 #endif
 
-#ifdef LOG_USE_COLOR
-void log_set_color(void) {
-#ifdef HAVE_WIN32_VT100
+#if defined(LOG_USE_COLOR) && defined(HAVE_WIN32_VT100)
+static inline bool win_set_stderr_color(void) {
   HANDLE stderr_handle;
   DWORD mode;
 
   stderr_handle = GetStdHandle(STD_ERROR_HANDLE);
-  L.colors = (
+  return (
     _isatty(_fileno(stderr)) &&
     GetConsoleMode(stderr_handle, &mode) &&
     SetConsoleMode(stderr_handle, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING)
   );
-#elif HAVE_UNISTD_H
-  L.colors = isatty(fileno(stderr));
-#elif LOG_FORCE_COLOR
+}
+#endif
+
+#ifdef LOG_USE_COLOR
+bool log_set_color(void) {
+#ifdef LOG_FORCE_COLOR
+#ifdef HAVE_WIN32_VT100
+  win_set_stderr_color();
+#endif
   L.colors = true;
+#elif defined(HAVE_WIN32_VT100)
+  L.colors = win_set_stderr_color();
+#elif defined(HAVE_UNISTD_H)
+  L.colors = isatty(fileno(stderr));
 #else
   L.colors = false;
 #endif
+  return L.colors;
 }
 
 void log_force_color(bool colors) {
   L.colors = colors;
+}
+
+bool log_has_color(void) {
+  return L.colors;
 }
 #endif
 

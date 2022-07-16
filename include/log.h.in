@@ -16,6 +16,10 @@
 #cmakedefine LOG_FORCE_COLOR
 #endif
 
+#ifndef LOG_USE_BRIGHT_COLOR
+#cmakedefine LOG_USE_BRIGHT_COLOR
+#endif
+
 #ifndef HAVE_WIN32_VT100
 #cmakedefine HAVE_WIN32_VT100
 #endif
@@ -62,8 +66,9 @@ enum { LOG_TRACE, LOG_DEBUG, LOG_INFO, LOG_WARN, LOG_ERROR, LOG_FATAL };
 #define log_fatal(...) log_log(LOG_FATAL, __FILE__, __LINE__, __VA_ARGS__)
 
 #ifdef LOG_USE_COLOR
-void log_set_color(void);
+bool log_set_color(void);
 void log_force_color(bool colors);
+bool log_has_color(void);
 #endif
 
 const char* log_level_string(int level);

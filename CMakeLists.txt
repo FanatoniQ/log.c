@@ -10,8 +10,9 @@ include(CheckIncludeFile)
 
 option(LOG_USE_COLOR "Enable ANSI color features" ON)
 option(LOG_FORCE_COLOR "Force ANSI color features" OFF)
+option(LOG_USE_BRIGHT_COLOR "Use brighter ANSI colors" OFF)
 
-if (LOG_FORCE_COLOR)
+if (LOG_FORCE_COLOR OR LOG_USE_BRIGHT_COLOR)
     set(LOG_USE_COLOR ON)
 endif ()
 
@@ -68,20 +69,33 @@ if (LOG_FORCE_COLOR)
     message(STATUS "Option LOG_FORCE_COLOR is ON")
 endif ()
 
-############################
-# EXECUTABLE color_example #
-############################
+if (LOG_USE_BRIGHT_COLOR)
+    target_compile_definitions(log.c PRIVATE -DLOG_USE_BRIGHT_COLOR)
+    message(STATUS "Option LOG_USE_BRIGHT_COLOR is ON")
+endif ()
 
 if (LOG_USE_COLOR)
-    add_executable(color_example EXCLUDE_FROM_ALL ${PROJECT_SOURCE_DIR}/color_example.c)
+    ############################
+    # EXECUTABLE color_example #
+    ############################
+
+    add_executable(color_example EXCLUDE_FROM_ALL ${PROJECT_SOURCE_DIR}/examples/color_example.c)
     target_include_directories(color_example PUBLIC ${PROJECT_BINARY_DIR}/gen)
     target_link_libraries(color_example log.c)
+
+    #################################
+    # EXECUTABLE color_full_example #
+    #################################
+
+    add_executable(color_full_example EXCLUDE_FROM_ALL ${PROJECT_SOURCE_DIR}/examples/color_full_example.c)
+    target_include_directories(color_full_example PUBLIC ${PROJECT_BINARY_DIR}/gen)
+    target_link_libraries(color_full_example log.c)
 endif ()
 
 ######################
 # EXECUTABLE example #
 ######################
 
-add_executable(example EXCLUDE_FROM_ALL ${PROJECT_SOURCE_DIR}/example.c)
+add_executable(example EXCLUDE_FROM_ALL ${PROJECT_SOURCE_DIR}/examples/example.c)
 target_include_directories(example PUBLIC ${PROJECT_BINARY_DIR}/gen)
 target_link_libraries(example log.c)

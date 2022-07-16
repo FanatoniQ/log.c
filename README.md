@@ -22,7 +22,8 @@ cmake ..
 cmake -G 'MinGW Makefiles' -D LOG_USE_COLOR=OFF ..
 # On Windows with MinGW generator with forced color support:
 cmake -G 'MinGW Makefiles' -D LOG_FORCE_COLOR=ON ..
-
+# On Windows with MinGW generator with bright color support:
+cmake -G 'MinGW Makefiles' -D LOG_USE_BRIGHT_COLOR=ON ..
 
 # To build the liblog.c.a static library:
 cmake --build .
@@ -107,25 +108,35 @@ The function is passed the boolean `true` if the lock should be acquired or
 Returns the name of the given log level as a string.
 
 
-#### log_set_color(void)
+#### bool log_set_color()
 Sets color support to be used when `stdout_callback` is called.
 This should be called at the start of the program in order to enable color support on supported
-os and tty. Requires `-D LOG_USE_COLOR=ON`.
+os and tty. Returns true if logger supports colors. Requires `-D LOG_USE_COLOR=ON`.
 
 
 #### log_force_color(bool colors)
 Forces color support. Requires `-D LOG_USE_COLOR=ON`.
 
 
+#### bool log_has_color()
+Returns true if logger currently supports colors.
+
+
 #### LOG_USE_COLOR
-If cmake project configuration used `-D LOG_USE_COLOR=ON` ANSI color escape codes will
+If cmake project setup used `-D LOG_USE_COLOR=ON` ANSI color escape codes will
 be available on compatible systems when using a tty once `log_set_color` is called.
 
 
 #### LOG_FORCE_COLOR
-If cmake project configuration used `-D LOG_FORCE_COLOR=ON` ANSI color escape codes will
+If cmake project setup used `-D LOG_FORCE_COLOR=ON` ANSI color escape codes will
 be forced once `log_set_color` is called.
 This is usefull to force ANSI color escape codes on non compatible systems or non tty.
+
+
+#### LOG_USE_BRIGHT_COLOR
+If cmake project setup used `-D LOG_USE_BRIGHT_COLOR=ON`, `LOG_USE_COLOR` option will
+be set and brighter colors will be used.
+
 
 ## License
 This library is free software; you can redistribute it and/or modify it under
