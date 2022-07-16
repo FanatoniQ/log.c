@@ -4,6 +4,7 @@ int main(void)
 {
     log_set_color();
     log_set_level(LOG_TRACE);
+    log_info("log.c version: %s", LOG_VERSION);
     log_trace("color support: %s", log_has_color() ? "true" : "false");
     log_trace("colored trace log !");
     log_debug("colored debug log !");

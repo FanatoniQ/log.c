@@ -41,7 +41,7 @@
 #endif
 #endif
 
-#define LOG_VERSION "0.2.0"
+#define LOG_VERSION "@PROJECT_VERSION@"
 
 typedef struct {
   va_list ap;

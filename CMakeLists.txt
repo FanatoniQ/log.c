@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(log.c C)
+project(log.c VERSION "0.2.0" LANGUAGES C)
 
 include(CheckSymbolExists)
 include(CheckIncludeFile)
